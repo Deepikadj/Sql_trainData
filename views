@@ -1,0 +1,8 @@
+-- view only booked
+CREATE VIEW booked AS
+    SELECT 
+        bookingid, username, status
+    FROM
+        bookings
+    WHERE
+        status = 'confirmed';
