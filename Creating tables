@@ -1,0 +1,111 @@
+create database railway_reservation;
+use railway_reservation;
+
+
+-- user registration table
+CREATE TABLE user_account (
+    userID int PRIMARY KEY auto_increment,
+    username varchar(20) unique,
+    firstname VARCHAR(50) NOT NULL,
+    lastname VARCHAR(55) NOT NULL,
+    password VARCHAR(30) NOT NULL,
+    emailID VARCHAR(40) UNIQUE,
+    phoneno bigint(10) CHECK (LENGTH(phoneno) = 10) unique,
+	created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+select * from user_account;
+alter table user_account auto_increment=10;
+alter table user_account add gender char(1);
+
+insert into user_account
+( username, firstname, lastname, password, emailID, phoneno)
+values('alicedoe','alice','doe','doealice@1','doe124@gmail.com',9304920299);
+
+
+-- train schedules table
+CREATE TABLE train_schedule (
+    trainno INT PRIMARY KEY AUTO_INCREMENT,
+    trainname VARCHAR(40) NOT NULL,
+    departuretime TIME not null,
+    arrivaltime TIME not null,
+    startlocation VARCHAR(40) not null,
+    destination VARCHAR(40) not null,
+    totaldays INT not null,
+    distance INT NOT NULL
+);
+SELECT * FROM TRAIN_SCHEDULE;
+alter table train_schedule auto_increment=10000;
+ALTER TABLE TRAIN_SCHEDULE ADD LAST_STATION_ID INT;
+
+alter table TRAIN_SCHEDULE rename column DISTANCE to DISTANCE_;
+DROP TABLE TRAIN_SCHEDULE;
+TRUNCATE TABLE TRAIN_SCHEDULE;
+update train_schedule set trainno=10000 where trainno=10002;
+delete from train_schedule where trainno=10001;
+
+INSERT INTO TRAIN_SCHEDULE
+(trainname, departuretime, arrivaltime, startlocation, destination, totaldays, distance)
+VALUES('PEARLCITY','19:45:00','01:00:00','chennai-egmore','tuticorn',2,656);
+-- seat details 
+CREATE TABLE Seats (
+    SeatID INT PRIMARY KEY AUTO_INCREMENT,
+    SeatNumber VARCHAR(10) NOT NULL,
+    SeatClass VARCHAR(20),
+    TRAINID INT,
+    IsBooked BOOLEAN DEFAULT FALSE
+);
+CREATE TABLE SeatClasses (
+    ClassID INT PRIMARY KEY AUTO_INCREMENT,
+    ClassName VARCHAR(50) NOT NULL
+);
+
+
+
+-- stops details 
+CREATE TABLE drop_station (
+    stationid int primary key auto_increment,
+    station_name VARCHAR(40) not null
+);
+
+
+CREATE TABLE DropStationCharges (
+    ChargeID INT PRIMARY KEY AUTO_INCREMENT,
+    Stationid int not null,
+    Classid int not null,
+    base_fare decimal(10,2),
+    total DECIMAL(10, 2) AS (base_fare + (classid * 20) + (stationid * 10))
+);
+
+
+
+# booking details
+CREATE TABLE bookings (
+    BOOKINGID INT PRIMARY KEY AUTO_INCREMENT,
+    USERNAME VARCHAR(50),
+    seatid INT not null,
+    TRAINID INT not null,
+    stationid INT not null,
+    classid INT not null,
+    date_booked TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('confirmed', 'waiting','Not booked') DEFAULT 'confirmed',
+    FOREIGN KEY (USERNAME)
+        REFERENCES USER_ACCOUNT (USERNAME),
+    FOREIGN KEY (TRAINID)
+        REFERENCES TRAIN_SCHEDULE (TRAINNO),
+    FOREIGN KEY (stationid)
+        REFERENCES drop_station (stationid),
+    FOREIGN KEY (classid)
+        REFERENCES seatclasses (classid),
+    FOREIGN KEY (seatid)
+        REFERENCES seats (seatid)
+);
+
+
+CREATE TABLE refund_ (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    BOOKINGID INT,
+    refund_date TIMESTAMP,
+    refund_amount DECIMAL(10, 2),
+    FOREIGN KEY (BOOKINGID) REFERENCES bookings(BOOKINGID)
+);
