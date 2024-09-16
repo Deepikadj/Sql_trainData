@@ -1,0 +1,50 @@
+ -- trigger to automatically enter the refund after updating wait list
+DELIMITER //
+CREATE TRIGGER refund
+AFTER UPDATE ON bookings
+FOR EACH ROW
+BEGIN
+    IF NEW.status = 'waiting' THEN
+        INSERT INTO refund_(BOOKINGID, refund_date, refund_amount)
+        VALUES (NEW.BOOKINGID, NOW(), (
+            SELECT d.total
+            FROM DropStationCharges d
+            JOIN SeatClasses sc ON NEW.classid = sc.ClassID
+            WHERE d.stationid = NEW.stationid AND d.Classid = NEW.classid
+        ));
+    END IF;
+END;
+//
+DELIMITER ;
+
+    
+DELIMITER //
+CREATE TRIGGER refund_
+AFTER UPDATE ON bookings
+FOR EACH ROW
+BEGIN
+    IF NEW.status = 'not booked' THEN
+        INSERT INTO refund_(BOOKINGID, refund_date, refund_amount)
+        VALUES (NEW.BOOKINGID, NOW(), (
+            SELECT d.total
+            FROM DropStationCharges d
+            JOIN SeatClasses sc ON NEW.classid = sc.ClassID
+            WHERE d.stationid = NEW.stationid AND d.Classid = NEW.classid
+        ));
+    END IF;
+END;
+//
+DELIMITER ;
+
+
+
+ WITH Duplicate_ AS (
+    SELECT 
+        MIN(id) as id
+    FROM 
+        refund_
+    GROUP BY 
+        bookingid
+)
+DELETE FROM refund_
+WHERE id NOT IN (SELECT id FROM Duplicate_);
