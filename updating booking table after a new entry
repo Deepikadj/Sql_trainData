@@ -1,0 +1,36 @@
+-- show waiting for last booked person if one seat is booked by more than one 
+UPDATE bookings b
+JOIN (
+    SELECT seatid, TRAINID, classid, MAX(date_booked) AS max_date
+    FROM bookings
+    GROUP BY seatid, TRAINID, classid
+    HAVING COUNT(*) > 1
+) AS new
+ON b.seatid = new.seatid 
+   AND b.date_booked = new.max_date
+JOIN seatS s ON s.seatid= b.classid and s.trainid=b.trainid
+SET b.status = 'waiting';
+
+
+
+		              -- not book if data wrong
+UPDATE bookings b
+        JOIN
+    seats s ON b.seatid = s.seatid
+        JOIN
+    SeatClasses sc ON b.ClassID != sc.ClassID
+        OR b.trainid != s.trainid 
+SET 
+    b.status = 'not booked'
+WHERE
+    s.SeatClass = sc.ClassName;
+
+
+
+                                      -- BOOKINGS SEATS
+UPDATE Seats s
+JOIN Bookings b ON s.SeatID = b.SeatID
+JOIN SeatClasses sc ON b.ClassID = sc.ClassID
+SET s.IsBooked = true
+WHERE s.SeatClass = sc.ClassName;
+                                
