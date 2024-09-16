@@ -1,0 +1,15 @@
+ -- inout stored procedure
+DELIMITER //
+create procedure charge_increase(INOUT clid int,inout st int,INOUT base decimal(10,2))
+BEGIN                              
+select base_fare into base from dropstationcharges where classid = clid and stationid=st;
+set base=base+10.00;
+update dropstationcharges set base_fare= base where clid=classid and stationid=st;
+END;
+
+set @clid=3;
+set @st=1;
+set @base_fare=0;
+call charge_increase(@clid,@st,@base);
+
+select * from dropstationcharges;
